@@ -1,0 +1,17 @@
+{
+  "name": "honkai-bot",
+  "version": "1.0.0",
+  "description": "Bot Discord tự động gửi code Honkai Star Rail mới nhất",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.8",
+    "cheerio": "^1.0.0-rc.12",
+    "discord.js": "^14.14.1",
+    "node-cron": "^3.0.3",
+    "express": "^4.19.2"
+  }
+}
