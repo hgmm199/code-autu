@@ -4,9 +4,8 @@ import * as cheerio from "cheerio";
 import cron from "node-cron";
 
 // === Cấu hình ===
-// Lấy token từ biến môi trường (Environment Variables trên Render)
-const TOKEN = process.env.TOKEN;
-const CHANNEL_ID = "1432358007471210549"; // ID kênh Discord
+const TOKEN = process.env.TOKEN; // ⚠️ Token bot lấy trong Environment Variables (Render hoặc Replit)
+const CHANNEL_ID = "1432358007471210549"; // ID kênh Discord của bạn
 
 // === Khởi tạo bot ===
 const client = new Client({
@@ -15,7 +14,7 @@ const client = new Client({
 
 let lastCodes = new Set();
 
-// === Hàm lấy code mới từ trang web ===
+// === Hàm lấy code mới từ Hoyolab ===
 async function getLatestCodes() {
   try {
     const url = "https://www.hoyolab.com/article_list/35/2";
@@ -40,20 +39,29 @@ async function getLatestCodes() {
   }
 }
 
-// === Hàm kiểm tra & gửi code mới ===
+// === Hàm kiểm tra & gửi code ===
 async function checkCodes() {
-  const newCodes = await getLatestCodes();
-  const diff = [...newCodes].filter((x) => !lastCodes.has(x));
+  try {
+    const newCodes = await getLatestCodes();
+    const diff = [...newCodes].filter((x) => !lastCodes.has(x));
 
-  if (diff.length > 0) {
     const channel = await client.channels.fetch(CHANNEL_ID);
-    if (channel) {
+
+    if (diff.length > 0) {
+      // Nếu có code mới → gửi code
       await channel.send(`🎁 **Code Honkai Star Rail mới!**\n${diff.join("\n")}`);
       console.log("✅ Gửi code mới:", diff);
+      lastCodes = newCodes;
+    } else {
+      // Nếu không có code mới → gửi 1 tin duy nhất mỗi 30 phút
+      const time = new Date().toLocaleString("vi-VN", {
+        timeZone: "Asia/Ho_Chi_Minh",
+      });
+      await channel.send(`⏳ Không có code mới (lúc ${time})`);
+      console.log("⏳ Không có code mới:", time);
     }
-    lastCodes = newCodes;
-  } else {
-    console.log("⏳ Không có code mới.");
+  } catch (err) {
+    console.error("❌ Lỗi checkCodes:", err.message);
   }
 }
 
@@ -64,7 +72,7 @@ client.once("ready", async () => {
   // Kiểm tra ngay khi khởi động
   await checkCodes();
 
-  // Lặp lại mỗi 30 phút
+  // Kiểm tra mỗi 30 phút
   cron.schedule("*/30 * * * *", checkCodes);
 });
 
