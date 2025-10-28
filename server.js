@@ -5,7 +5,7 @@ import cron from "node-cron";
 import express from "express";
 
 // === Cấu hình ===
-const TOKEN = "TOKEN-BOT-CỦA-BẠN"; // ⚠️ Thay bằng token thật (không chia sẻ công khai)
+const TOKEN = "TOKEN-BOT-YOU"; // ⚠️ Thay bằng token thật (không chia sẻ công khai)
 const CHANNEL_ID = "1432358007471210549"; // ID kênh Discord muốn gửi code
 
 const client = new Client({
