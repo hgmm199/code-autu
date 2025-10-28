@@ -2,19 +2,20 @@ import { Client, GatewayIntentBits } from "discord.js";
 import axios from "axios";
 import * as cheerio from "cheerio";
 import cron from "node-cron";
-import express from "express";
 
 // === Cấu hình ===
-const TOKEN = "TOKEN-BOT-YOU"; // ⚠️ Thay bằng token thật (không chia sẻ công khai)
-const CHANNEL_ID = "1432358007471210549"; // ID kênh Discord muốn gửi code
+// Lấy token từ biến môi trường (Environment Variables trên Render)
+const TOKEN = process.env.TOKEN;
+const CHANNEL_ID = "1432358007471210549"; // ID kênh Discord
 
+// === Khởi tạo bot ===
 const client = new Client({
   intents: [GatewayIntentBits.Guilds, GatewayIntentBits.GuildMessages],
 });
 
 let lastCodes = new Set();
 
-// === Hàm lấy code mới ===
+// === Hàm lấy code mới từ trang web ===
 async function getLatestCodes() {
   try {
     const url = "https://www.hoyolab.com/article_list/35/2";
@@ -34,12 +35,12 @@ async function getLatestCodes() {
 
     return codes;
   } catch (err) {
-    console.error("⚠️ Lỗi khi lấy code:", err.message);
+    console.error("❌ Lỗi khi lấy code:", err.message);
     return new Set();
   }
 }
 
-// === Hàm kiểm tra & gửi code ===
+// === Hàm kiểm tra & gửi code mới ===
 async function checkCodes() {
   const newCodes = await getLatestCodes();
   const diff = [...newCodes].filter((x) => !lastCodes.has(x));
@@ -58,7 +59,7 @@ async function checkCodes() {
 
 // === Khi bot sẵn sàng ===
 client.once("ready", async () => {
-  console.log(`🤖 Bot đã đăng nhập: ${client.user.tag}`);
+  console.log(`✅ Bot đã đăng nhập: ${client.user.tag}`);
 
   // Kiểm tra ngay khi khởi động
   await checkCodes();
@@ -66,13 +67,6 @@ client.once("ready", async () => {
   // Lặp lại mỗi 30 phút
   cron.schedule("*/30 * * * *", checkCodes);
 });
-
-// === Giữ bot hoạt động 24/24 (bắt buộc cho Render) ===
-const app = express();
-app.get("/", (req, res) => {
-  res.send("✅ Bot Honkai Star Rail đang hoạt động 24/24!");
-});
-app.listen(3000, () => console.log("🌐 Server đang chạy tại cổng 3000"));
 
 // === Chạy bot ===
 client.login(TOKEN);
